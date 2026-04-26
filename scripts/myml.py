@@ -1,5 +1,5 @@
 import numpy as np
-
+import pandas as pd
 
 from sklearn.model_selection import LeaveOneGroupOut, GroupKFold, GridSearchCV
 from sklearn.preprocessing import StandardScaler
@@ -243,7 +243,8 @@ def loso_binary_calibrated_nested_cv(X, y, groups, model, space, k):
         'auc': np.mean(fold_auc),
         'accuracy_std': np.std(fold_acc),
         'f1_std': np.std(fold_f1),
-        'auc_std': np.std(fold_auc)
+        'auc_std': np.std(fold_auc),
+        'k': k
     }
 
 
@@ -280,3 +281,32 @@ def calibrated_extended_features(X_train, y_train, g_train, X_test, y_test, g_te
     y_test_calib = y_test[test_indices]
 
     return X_train_calib, y_train_calib, g_train_calib, X_test_calib, y_test_calib
+
+
+
+def safe_results_binary(model_name, personalization, metrics):
+    """
+    safe the reults for later use
+    """
+
+    results = {
+        'Model': model_name,
+        'Personalization': personalization,
+        'K': metrics.get('k', None),
+        'Accuracy': metrics.get('accuracy'),
+        'Accuracy_Std': metrics.get('accuracy_std'),
+        'F1': metrics.get('f1'),
+        'F1_Std': metrics.get('f1_std'),
+        'AUC': metrics.get('auc'),
+        'AUC_Std': metrics.get('auc_std')
+    }
+    
+    # filename
+    filename = f"test_{model_name}_{personalization}.csv"
+
+    # safe
+    df = pd.DataFrame([results])
+    df.to_csv(filename, index=False)
+    print(f"Results saved to {filename}")
+
+    return results
