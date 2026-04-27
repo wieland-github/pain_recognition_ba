@@ -3,3 +3,4 @@ painenv/
 dataset/
 *.pyc
 __pycache__/
+*.csv
