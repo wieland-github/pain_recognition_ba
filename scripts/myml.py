@@ -310,3 +310,34 @@ def safe_results_binary(model_name, personalization, metrics):
     print(f"Results saved to {filename}")
 
     return results
+
+def safe_results_multiclass(model_name, personalization, metrics):
+    """
+    safe results for later use
+    """
+
+    results = {
+        'Model': model_name,
+        'Personalization': personalization,
+        'K': metrics.get('k', None),
+        'Accuracy': metrics.get('accuracy'),
+        'Accuracy_Std': metrics.get('accuracy_std'),
+        'F1': metrics.get('f1'),
+        'F1_Std': metrics.get('f1_std'),
+        'AUC': metrics.get('auc'),
+        'AUC_Std': metrics.get('auc_std'),
+        'MAE': metrics.get('mae'),
+        'MAE_Std': metrics.get('mae_std'),
+        'RMSE': metrics.get('rmse'),
+        'RMSE_Std': metrics.get('rmse_std')
+    }
+    
+    # Filename 
+    filename = f"test_multiclass_{model_name}_{personalization}.csv"
+
+    # Save
+    df = pd.DataFrame([results])
+    df.to_csv(filename, index=False)
+    print(f"Results saved to {filename}")
+
+    return results
