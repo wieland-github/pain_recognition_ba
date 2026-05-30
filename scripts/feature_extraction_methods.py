@@ -4,11 +4,12 @@ from pathlib import Path
 from tqdm import tqdm
 from scipy import stats, signal
 from pycatch22 import catch22_all
+import neurokit2 as nk
 
 
 
 # -----------------------------------
-# Feature extraction functions
+# Feature extraction catch22 + time-domain features
 # -----------------------------------
 
 def extract_catch22_features(signal):
@@ -87,3 +88,41 @@ def extract_features_dataset(X, sensor_names):
         X_features[i] = np.concatenate(row)
 
     return X_features, feature_names
+
+
+# -----------------------------------
+# Feature extraction Neurokit2
+# -----------------------------------
+
+def extract_neurokit2_all_features_from_one_signal(signal, sensor_names, sr):
+    """
+    Extract features using Neurokit2
+    """
+
+    all_features = []
+
+    # replace nan and inf with 0
+    signal = np.nan_to_num(signal, nan=0.0, posinf=0.0, neginf=0.0)
+
+    # extract features for each sensor
+    for sensor in sensor_names:
+        if sensor == "Bvp":
+            processed, info =nk.ppg_process(signal, sampling_rate=sr)
+            features = nk.ppg_analyze(processed, sampling_rate=sr, method="interval-related")
+        elif sensor == "Eda_E4" or sensor == "Eda_RB":
+            processed, info = nk.eda_process(signal, sampling_rate=sr)
+            features = nk.eda_analyze(processed, sampling_rate=sr, method="interval-related")
+        elif sensor == "Resp":
+            processed, info = nk.rsp_process(signal, sampling_rate=sr)
+            features = nk.rsp_analyze(processed, sampling_rate=sr, method="interval-related")
+        elif sensor == "Ecg":
+            processed, info = nk.ecg_process(signal, sampling_rate=sr)
+            features = nk.ecg_analyze(processed, sampling_rate=sr, method="interval-related")
+        elif sensor == "Emg":
+            processed, info = nk.emg_process(signal, sampling_rate=sr)
+            features = nk.emg_analyze(processed, sampling_rate=sr, method="interval-related")
+
+        features = features.add_prefix(f"{sensor}__")
+        all_features.append(features)
+
+    return np.concat(all_features, axis=1)
